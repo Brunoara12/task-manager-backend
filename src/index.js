@@ -20,6 +20,15 @@ app.post('/users', async (req, res) => {
 
 })
 
+app.post('/users/login', async (req,res) => {
+    try {
+        const user = await User.findByCredentials(req.body.email, req.body.password)
+        res.send(user)
+    } catch(error) {
+        res.status(400).send()
+    }
+})
+
 app.get('/users', async (req, res) => {
 
     try {
@@ -59,7 +68,13 @@ app.patch('/users/:id', async (req, res) => {
     }
 
     try {
-        const user = await User.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true})
+        const user = await User.findById(req.params.id)
+        updates.forEach((update) => {
+            user[update] = req.body[update]
+        })
+        await user.save()
+
+        //const user = await User.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true})
         if(!user) {
             return res.status(404).send()
         }
@@ -117,7 +132,12 @@ app.patch('/tasks/:id', async (req, res) => {
         return res.status(400).send({error: 'Invalid Updates!'})
     }
     try {
-        const task = await Task.findByIdAndUpdate(_id, req.body, {new: true, runValidators: true})
+        const task = await Task.findById(_id)
+        updates.forEach((update) => {
+            task[update] = req.body[update]
+        })
+        res.save()
+        //const task = await Task.findByIdAndUpdate(_id, req.body, {new: true, runValidators: true})
         if(!task) {
             return res.status(404).send()
         }
@@ -131,3 +151,19 @@ app.patch('/tasks/:id', async (req, res) => {
 app.listen(port, () => {
     console.log('Server is up on port ' + port)
 })
+
+const bcrypt = require('bcryptjs')
+
+
+const myFunction = async() => {
+    const password = 'Red12345!'
+    const hashedPassword = await bcrypt.hash(password, 8)
+
+    console.log(password)
+    console.log(hashedPassword)
+
+    const isMatch = await bcrypt.compare(password, hashedPassword)
+    console.log(isMatch)
+}
+
+myFunction()
