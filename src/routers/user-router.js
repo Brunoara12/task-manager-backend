@@ -4,12 +4,14 @@ const sharp = require('sharp')
 const router = express.Router()
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const { sendWelcomeEmail, sendCancellationEmail } = require('../emails/account')
+
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
 
     try {
+        sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken()
-        //await user.save()
         res.status(201).send({user, token})
     } catch (error) {
         res.status(400).send(error)
@@ -84,7 +86,7 @@ router.delete('/users/me', auth, async (req, res) => {
 
     try{
         await req.user.remove()
-
+        sendCancellationEmail(req.user.email, req.user.name)
         res.send(req.user)
     } catch(error) {
         res.status(500).send()
