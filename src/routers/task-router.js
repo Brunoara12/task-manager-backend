@@ -87,10 +87,11 @@ router.patch('/tasks/:id', auth, async (req, res) => {
         updates.forEach((update) => {
             task[update] = req.body[update]
         })
-        res.save()
+        await task.save()
 
         res.send(task)
     } catch(error) {
+        console.log(error)
         res.status(500).send(error)
     }
 })
